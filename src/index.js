@@ -14,7 +14,7 @@ function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
   const user = users.find((user) => user.username === username);
   if (!user) {
-    return response.status(404).json({ error: 'Mensagem do erro' });
+    return response.status(404).json({ error: 'User not found' });
   }
   request.user = user;
   return next();
@@ -30,7 +30,7 @@ app.post('/users', (request, response) => {
     const userAlreadyExists = users.some((user) => user.username === username);
 
     if (userAlreadyExists) {
-      return response.status(400).json({ 	error: 'Mensagem do erro' })
+      return response.status(400).json({ 	error: 'User already exists' });
     }
     const id = generateUuid();
     const todos = [];
@@ -51,9 +51,8 @@ app.post('/users', (request, response) => {
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   try {
-    const { username } = request.user;
-    const todoUser = users.find((user) => user.username === username);
-    return response.json(todoUser.todos)
+    const { user } = request;
+    return response.json(user.todos)
   } catch (error) {
     return response.status(500).json({ error });
   }
@@ -122,7 +121,7 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
     const {user} = request;
     const todoExists = user.todos.findIndex((item) => item.id === id);
     if (todoExists === -1) {
-      return response.status(404).json({ error: 'Mensagem do erro'});
+      return response.status(404).json({ error: 'Todo not found'});
     }
     user.todos.splice(todoExists,1);
     return response.status(204).send();  
